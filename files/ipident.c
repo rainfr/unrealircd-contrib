@@ -14,7 +14,6 @@ module
 				"The module is installed. Now all you need to do is add a loadmodule line:";
 				"loadmodule \"third/m_ipident\";";
 				"And /REHASH the IRCd.";
-				"Please see the README for operclass requirements";
 		}
 }
 *** <<<MODULE MANAGER END>>>
