@@ -26,7 +26,7 @@ EVENT(check_for_updates);
 ModuleHeader MOD_HEADER
 = {
 	"third/upgrade-notify",	/* Name of module */
-	"2.0", /* Version */
+	"2.1", /* Version */
 	"Sends out a message to opers when there is an upgrade available for UnrealIRCd", /* Short description of module */
 	"Valware",
 	"unrealircd-6",
@@ -128,7 +128,7 @@ void my_download_complete(OutgoingWebRequest *request, OutgoingWebResponse *resp
 						int result = strcmp(current_version, stable_version);
 						if (result < 0)
 						{
-							unreal_log(ULOG_INFO, "upgrade", "UPGRADE_AVAILABLE", NULL, "There is an upgrade available for UnrealIRCd! Your version: UnrealIRCd %s - New version: UnrealIRCd %s", current_version, stable_version);
+							unreal_log(ULOG_INFO, "upgrade", "UPGRADE_AVAILABLE", NULL, "There is an upgrade available for UnrealIRCd! Your version: UnrealIRCd $old - New version: UnrealIRCd $new", log_data_string("old", current_version), log_data_string("new", stable_version));
 							unreal_log(ULOG_INFO, "upgrade", "UPGRADE_AVAILABLE", NULL, "Visit https://www.unrealircd.org/docs/Upgrading for information on upgrading.");
 						}
 						break;
