@@ -125,7 +125,7 @@ void my_download_complete(OutgoingWebRequest *request, OutgoingWebResponse *resp
 					{
 						const char *stable_version = json_string_value(value3);
 						
-						int result = strcmp(current_version, stable_version);
+						int result = strnatcasecmp(current_version, stable_version);
 						if (result < 0)
 						{
 							unreal_log(ULOG_INFO, "upgrade", "UPGRADE_AVAILABLE", NULL, "There is an upgrade available for UnrealIRCd! Your version: UnrealIRCd $old - New version: UnrealIRCd $new", log_data_string("old", current_version), log_data_string("new", stable_version));
