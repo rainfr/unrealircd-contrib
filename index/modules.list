@@ -1189,6 +1189,26 @@ module "third/elmer"
 	}
 }
 
+module "third/allsend"
+{
+	description "Adds the /allsend command which allows privileged server operators to send targetted messages";
+	version "1.00";
+	author "Valware";
+	documentation "https://github.com/ValwareIRC/valware-unrealircd-mods/blob/main/allsend/README.md";
+	troubleshooting "In case of problems, documentation or e-mail me at v.a.pond@outlook.com";
+	source "https://raw.githubusercontent.com/unrealircd/unrealircd-contrib/unreal6/files/allsend.c";
+	sha256sum "78642407c84f63e7b4b9d10febef775686edd0de391794c35adf5e83911a8c7d";
+	min-unrealircd-version "6.*";
+	max-unrealircd-version "6.*";
+	post-install-text
+	{
+		"The module is installed. Now all you need to do is add a loadmodule line:";
+		"loadmodule \"third/allsend\";";
+		"And /REHASH the IRCd.";
+		"Please see the README for operclass requirements";
+	}
+}
+
 module "third/sacycle"
 {
 	description "Force someone to part and rejoin a channel";
