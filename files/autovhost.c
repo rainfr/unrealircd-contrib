@@ -46,7 +46,7 @@ int vhostCount = 0;
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/autovhost", // Module name
-	"2.1.2", // Version
+	"2.1.3", // Version
 	"Apply vhosts at connect time based on users' raw nick formats or IPs", // Description
 	"Gottem", // Author
 	"unrealircd-6", // Modversion
@@ -103,7 +103,7 @@ char *replaceem(char *str, char *search, char *replace) {
 
 	newstr = strdup(str);
 	head = newstr;
-	while((tok = strstr(head, search))) {
+	while((tok = our_strcasestr(head, search))) {
 		oldstr = newstr;
 		newstr = malloc(strlen(oldstr) - strlen(search) + strlen(replace) + 1);
 		if(newstr == NULL) {

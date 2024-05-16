@@ -51,7 +51,7 @@ int gecosCount = 0; // Counter yo
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/gecos_replace", // Module name
-	"1.1.0", // Version
+	"1.1.1", // Version
 	"Enables replacing text in the gecos field on-connect", // Description
 	"Gottem", // Author
 	"unrealircd-6", // Modversion
@@ -109,7 +109,7 @@ char *replaceem(char *str, char *search, char *replace) {
 
 	newstr = strdup(str);
 	head = newstr;
-	while((tok = strstr(head, search))) {
+	while((tok = our_strcasestr(head, search))) {
 		oldstr = newstr;
 		newstr = malloc(strlen(oldstr) - strlen(search) + strlen(replace) + 1);
 		if(newstr == NULL) {
