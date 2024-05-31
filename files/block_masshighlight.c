@@ -53,7 +53,7 @@ int masshighlight_get_client_moddata(Client *client, Channel *channel);
 void masshighlight_set_client_moddata(Client *client, Channel *channel, int hl_count);
 int masshighlight_hook_cansend_chan(Client *client, Channel *channel, Membership *lp, const char **text, const char **errmsg, SendType sendtype);
 
-int spamf_ugly_vchanoverride = 0; // For viruschan shit =]
+extern MODVAR int spamf_ugly_vchanoverride; // For viruschan shit =]
 ModDataInfo *massHLMDI; // To store some shit with the channel ;]
 ModDataInfo *massHLUserMDI; // For storing external message hls
 Cmode_t extcmode_nocheck_masshl; // For storing the exemption chanmode =]
@@ -96,7 +96,7 @@ struct user_highlight {
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/block_masshighlight", // Module name
-	"2.2.0", // Version
+	"2.2.1", // Version
 	"Prevent mass highlights network-wide", // Description
 	"Gottem / k4be", // Author
 	"unrealircd-6", // Modversion
@@ -642,7 +642,7 @@ int masshighlight_hook_cansend_chan(Client *client, Channel *channel, Membership
 	int hl_new; // Store highlight count for further processing
 	size_t werdlen; // Word length ;]
 	size_t hl_nickslen; // Amount of chars that are part of highlights
-	size_t msglen; // Full message length (both of these are required for calculating percent etc), excludes delimiters
+	size_t msglen; // Full message length (both of these are required for calculating percentage etc), excludes delimiters
 
 	// Initialise some shit lol
 	bypass_nsauth = (muhcfg.allow_authed && IsUser(client) && IsLoggedIn(client));
@@ -672,9 +672,9 @@ int masshighlight_hook_cansend_chan(Client *client, Channel *channel, Membership
 
 		for(werd = strtoken(&p, cleantext, muhcfg.delimiters); werd; werd = strtoken(&p, NULL, muhcfg.delimiters)) { // Split that shit
 			werdlen = strlen(werd);
-			msglen += werdlen; // We do not count ze delimiters, otherwise the percents would get strangely low
+			msglen += werdlen; // We do not count ze delimiters, otherwise the percentages would get strangely low
 			if((acptr = find_user(werd, NULL)) && (find_membership_link(acptr->user->channel, channel))) { // User mentioned another user in this channel
-				if(!(strstr(gotnicks, acptr->id))) { // Do not count the same nickname appended multiple times to a single message
+				if(!our_strcasestr(gotnicks, acptr->id)) { // Do not count the same nickname appended multiple times to a single message
 					ircsnprintf(gotnicks, sizeof(gotnicks), "%s%s,", gotnicks, acptr->id);
 					hl_new++; // Got another highlight this round
 					hl_nickslen += werdlen; // Also add the nick's length

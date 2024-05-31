@@ -67,7 +67,7 @@ int textshun_hook_serversync(Client *client);
 int textshun_hook_cansend_chan(Client *client, Channel *channel, Membership *lp, const char **text, const char **errmsg, SendType sendtype);
 int textshun_hook_cansend_user(Client *client, Client *to, const char **text, const char **errmsg, SendType sendtype);
 
-ModDataInfo *textshunMDI; // To store the T-Lines with &me lol (hack so we don't have to use a .db file or some shit)
+ModDataInfo *textshunMDI; // To store the T-Lines as a local variable lol (so we don't have to use a .db file or some shit)
 int TLC; // A counter for T-Lines so we can change the moddata back to NULL
 
 // Help string in case someone does just /TEXTSHUN
@@ -105,7 +105,7 @@ static char *muhhalp[] = {
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/textshun", // Module name
-	"2.1.0", // Version
+	"2.1.1", // Version
 	"Drop messages based on nick and body", // Description
 	"Gottem", // Author
 	"unrealircd-6", // Modversion
@@ -120,28 +120,25 @@ MOD_INIT() {
 	CheckAPIError("CommandAdd(TS)", CommandAdd(modinfo->handle, MSG_TEXTSHUN_SHORT, textshun, MAXPARA, CMD_SERVER | CMD_USER));
 	CheckAPIError("CommandAdd(TLINE)", CommandAdd(modinfo->handle, MSG_TEXTSHUN_ALT, textshun, MAXPARA, CMD_SERVER | CMD_USER));
 
+	TLC = 0; // Start with 0 obv lmao
+	ModDataInfo mreq; // No moddata, let's request that shit
+	memset(&mreq, 0, sizeof(mreq)); // Set 'em lol
+	mreq.type = MODDATATYPE_LOCAL_VARIABLE;
+	mreq.name = "textshun_list"; // Name it
+	mreq.free = textshun_moddata_free; // Function to free 'em
+	mreq.serialize = NULL;
+	mreq.unserialize = NULL;
+	mreq.sync = 0;
+	textshunMDI = ModDataAdd(modinfo->handle, mreq); // Add 'em yo
+	CheckAPIError("ModDataAdd(textshun_list)", textshunMDI);
+
+	if((TLineList = get_tlines())) { // So load 'em
+		for(tEntry = TLineList; tEntry; tEntry = tEntry->next) // and iter8 m8
+			TLC++; // Ayyy premium countur
+	}
+
 	// Run event every 10 seconds, indefinitely and without any additional data (void *NULL etc)
 	CheckAPIError("EventAdd(textshun_event)", EventAdd(modinfo->handle, "textshun_event", textshun_event, NULL, 10000, 0));
-
-	TLC = 0; // Start with 0 obv lmao
-	if(!(textshunMDI = findmoddata_byname("textshun_list", MODDATATYPE_LOCAL_VARIABLE))) { // Attempt to find active moddata (like in case of a rehash)
-		ModDataInfo mreq; // No moddata, let's request that shit
-		memset(&mreq, 0, sizeof(mreq)); // Set 'em lol
-		mreq.type = MODDATATYPE_LOCAL_VARIABLE; // Apply to servers only (CLIENT actually includes users but we'll disregard that =])
-		mreq.name = "textshun_list"; // Name it
-		mreq.free = textshun_moddata_free; // Function to free 'em
-		mreq.serialize = NULL;
-		mreq.unserialize = NULL;
-		mreq.sync = 0;
-		textshunMDI = ModDataAdd(modinfo->handle, mreq); // Add 'em yo
-		CheckAPIError("ModDataAdd(textshun_list)", textshunMDI);
-	}
-	else { // We did get moddata
-		if((TLineList = get_tlines())) { // So load 'em
-			for(tEntry = TLineList; tEntry; tEntry = tEntry->next) // and iter8 m8
-				TLC++; // Ayyy premium countur
-		}
-	}
 
 	MARK_AS_GLOBAL_MODULE(modinfo);
 

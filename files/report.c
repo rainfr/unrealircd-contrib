@@ -113,12 +113,12 @@ Report *reportList = NULL;
 int reportList_lastID = 0; // Keep track of the last ID
 int reportListCount = 0; // Also the actual count
 static struct cfgstruct muhcfg;
-ModDataInfo *reportMDI; // To store the rep0ts with &me lol (hack so we don't have to use a .db file or some shit)
+ModDataInfo *reportMDI; // To store the rep0ts as a local variable lol (so we don't have to use a .db file or some shit)
 
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/report", // Module name
-	"1.1.0", // Version
+	"1.1.1", // Version
 	"For reporting bad stuff to the assigned IRC operators", // Description
 	"Gottem", // Author
 	"unrealircd-6", // Modversion
@@ -144,26 +144,22 @@ MOD_INIT() {
 	CheckAPIError("CommandAdd(REPORTDEL)", CommandAdd(modinfo->handle, MSG_REPORTDEL, reportdel, 1, CMD_USER));
 	CheckAPIError("CommandAdd(REPORTSYNC)", CommandAdd(modinfo->handle, MSG_REPORTSYNC, reportsync, 4, CMD_SERVER));
 
-	if(!(reportMDI = findmoddata_byname("report_list", MODDATATYPE_LOCAL_VARIABLE))) { // Attempt to find active moddata (like in case of a rehash)
-		ModDataInfo mreq; // No moddata, let's request that shit
-		memset(&mreq, 0, sizeof(mreq));
-		mreq.type = MODDATATYPE_LOCAL_VARIABLE; // Apply to servers only (CLIENT actually includes users but we'll disregard that =])
-		mreq.name = "report_list";
-		mreq.free = report_moddata_free;
-		mreq.serialize = NULL;
-		mreq.unserialize = NULL;
-		mreq.sync = 0; // Even though we *do* sync rep0ts I prefer having more control over when and what, so let's not let Unreal handle em =]
-		reportMDI = ModDataAdd(modinfo->handle, mreq); // Add 'em yo
-		CheckAPIError("ModDataAdd(report_list)", reportMDI);
-	}
-	else {
-		// We did get moddata, get the total count and highest ID =]]]]
-		reportList = moddata_local_variable(reportMDI).ptr;
-		for(reportItem = reportList; reportItem; reportItem = reportItem->next) {
-			reportListCount++;
-			if(reportItem->id > reportList_lastID)
-				reportList_lastID = reportList->id;
-		}
+	ModDataInfo mreq; // No moddata, let's request that shit
+	memset(&mreq, 0, sizeof(mreq));
+	mreq.type = MODDATATYPE_LOCAL_VARIABLE;
+	mreq.name = "report_list";
+	mreq.free = report_moddata_free;
+	mreq.serialize = NULL;
+	mreq.unserialize = NULL;
+	mreq.sync = 0; // Even though we *do* sync rep0ts I prefer having more control over when and what, so let's not let Unreal handle em =]
+	reportMDI = ModDataAdd(modinfo->handle, mreq); // Add 'em yo
+	CheckAPIError("ModDataAdd(report_list)", reportMDI);
+
+	reportList = moddata_local_variable(reportMDI).ptr;
+	for(reportItem = reportList; reportItem; reportItem = reportItem->next) {
+		reportListCount++;
+		if(reportItem->id > reportList_lastID)
+			reportList_lastID = reportList->id;
 	}
 
 	MARK_AS_GLOBAL_MODULE(modinfo);

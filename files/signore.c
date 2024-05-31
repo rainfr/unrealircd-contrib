@@ -65,7 +65,7 @@ int signore_hook_serversync(Client *client);
 int signore_hook_cansend_user(Client *client, Client *to, const char **text, const char **errmsg, SendType sendtype);
 
 // Muh globals
-ModDataInfo *signoreMDI; // To store the I-Lines with &me lol (hack so we don't have to use a .db file or some shit)
+ModDataInfo *signoreMDI; // To store the I-Lines as a local variable lol (so we don't have to use a .db file or some shit)
 int ILineCount; // A counter for I-Lines so we can change the moddata back to NULL
 
 // Help string in case someone does just /SIGNORE
@@ -100,7 +100,7 @@ static char *muhhalp[] = {
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/signore", // Module name
-	"2.1.0", // Version
+	"2.1.1", // Version
 	"Implements an I-Line for adding server-side ignores", // Description
 	"Gottem", // Author
 	"unrealircd-6", // Modversion
@@ -114,28 +114,25 @@ MOD_INIT() {
 	CheckAPIError("CommandAdd(SIGNORE)", CommandAdd(modinfo->handle, MSG_SIGNORE, signore, MAXPARA, CMD_SERVER | CMD_USER));
 	CheckAPIError("CommandAdd(ILINE)", CommandAdd(modinfo->handle, MSG_SIGNORE_ALT, signore, MAXPARA, CMD_SERVER | CMD_USER));
 
+	ILineCount = 0; // Start with 0 obv lmao
+	ModDataInfo mreq; // No moddata, let's request that shit
+	memset(&mreq, 0, sizeof(mreq)); // Set 'em lol
+	mreq.type = MODDATATYPE_LOCAL_VARIABLE;
+	mreq.name = "signore_list"; // Name it
+	mreq.free = signore_moddata_free; // Function to free 'em
+	mreq.serialize = NULL;
+	mreq.unserialize = NULL;
+	mreq.sync = 0;
+	signoreMDI = ModDataAdd(modinfo->handle, mreq); // Add 'em yo
+	CheckAPIError("ModDataAdd(signore_list)", signoreMDI);
+
+	if((ILineList = get_ilines())) { // So load 'em
+		for(sigEntry = ILineList; sigEntry; sigEntry = sigEntry->next) // and iter8 m8
+			ILineCount++; // Ayyy premium countur
+	}
+
 	// Run event every 10 seconds, indefinitely and without any additional data (void *NULL etc)
 	CheckAPIError("EventAdd(signore_event)", EventAdd(modinfo->handle, "signore_event", signore_event, NULL, 10000, 0));
-
-	ILineCount = 0; // Start with 0 obv lmao
-	if(!(signoreMDI = findmoddata_byname("signore_list", MODDATATYPE_LOCAL_VARIABLE))) { // Attempt to find active moddata (like in case of a rehash)
-		ModDataInfo mreq; // No moddata, let's request that shit
-		memset(&mreq, 0, sizeof(mreq)); // Set 'em lol
-		mreq.type = MODDATATYPE_LOCAL_VARIABLE;
-		mreq.name = "signore_list"; // Name it
-		mreq.free = signore_moddata_free; // Function to free 'em
-		mreq.serialize = NULL;
-		mreq.unserialize = NULL;
-		mreq.sync = 0;
-		signoreMDI = ModDataAdd(modinfo->handle, mreq); // Add 'em yo
-		CheckAPIError("ModDataAdd(signore_list)", signoreMDI);
-	}
-	else { // We did get moddata
-		if((ILineList = get_ilines())) { // So load 'em
-			for(sigEntry = ILineList; sigEntry; sigEntry = sigEntry->next) // and iter8 m8
-				ILineCount++; // Ayyy premium countur
-		}
-	}
 
 	MARK_AS_GLOBAL_MODULE(modinfo);
 

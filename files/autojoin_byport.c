@@ -48,7 +48,7 @@ unsigned short checkedem = 0;
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
 	"third/autojoin_byport", // Module name
-	"2.1.0", // Version
+	"2.1.1", // Version
 	"Auto-join channels on connect based on connection port", // Description
 	"Gottem", // Author
 	"unrealircd-6", // Modversion
@@ -112,6 +112,7 @@ int autojoin_byport_configtest(ConfigFile *cf, ConfigEntry *ce, int type, int *e
 		return 0;
 
 	// Loop dat shyte fam
+	tmp = NULL;
 	for(cep = ce->items; cep; cep = cep->next) {
 		checkedem = 1;
 		// Do we even have a valid pair l0l?
@@ -205,6 +206,7 @@ int autojoin_byport_configrun(ConfigFile *cf, ConfigEntry *ce, int type) {
 		return 0;
 
 	// Loop dat shyte fam
+	tmp = NULL;
 	for(cep = ce->items; cep; cep = cep->next) {
 		if(!cep->name || !cep->value) // Sanity checc l0l
 			continue;
