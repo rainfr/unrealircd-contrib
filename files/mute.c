@@ -25,7 +25,7 @@ module
 ModuleHeader MOD_HEADER
   = {
 	"third/mute",
-	"1.4",
+	"1.5",
 	"Globally mute a user", 
 	"Valware",
 	"unrealircd-6",
@@ -70,6 +70,11 @@ int who_the_hell_be_muted_lol(Client *client, Client *target, NameValuePrioList 
 int muted_mtag_is_ok(Client *client, const char *name, const char *value);
 int muted_mtag_should_send_to_client(Client *target);
 
+
+RPC_CALL_FUNC(rpc_mute_list);
+RPC_CALL_FUNC(rpc_mute);
+RPC_CALL_FUNC(rpc_unmute);
+
 ModDataInfo *mute_md;
 MOD_TEST()
 {
@@ -80,9 +85,35 @@ MOD_TEST()
 MOD_INIT() {
 	ModDataInfo mreq; // For MD
 	MessageTagHandlerInfo mtag; // For message-tagging
+	RPCHandlerInfo r;
 
 	MARK_AS_GLOBAL_MODULE(modinfo);
 	
+
+	memset(&r, 0, sizeof(r));
+	r.method = "mute.list";
+	r.call = rpc_mute_list;
+	if (!RPCHandlerAdd(modinfo->handle, &r))
+	{
+		config_error("[third/mute] Could not register RPC handler\"mute.list\"");
+		return MOD_FAILED;
+	}
+	r.method = "mute.add";
+	r.call = rpc_mute;
+	if (!RPCHandlerAdd(modinfo->handle, &r))
+	{
+		config_error("[third/mute] Could not register RPC handler\"mute.add\"");
+		return MOD_FAILED;
+	}
+	r.method = "mute.remove";
+	r.call = rpc_unmute;
+	if (!RPCHandlerAdd(modinfo->handle, &r))
+	{
+		config_error("[third/mute] Could not register RPC handler\"mute.remove\"");
+		return MOD_FAILED;
+	}
+
+
 	memset(&mtag, 0, sizeof(mtag));
 	mtag.name = MTAG_MUTED;
 	mtag.is_ok = muted_mtag_is_ok;
@@ -275,7 +306,6 @@ CMD_FUNC(CMD_MUTE)
 	sendnotice(client, "You have muted %s", target->name);
 	unreal_log(ULOG_INFO, "mute", "MUTE_COMMAND", client,
 					"$client muted $target.",
-					log_data_string("change_type", "mute"),
 					log_data_client("target", target));
 }
 
@@ -313,7 +343,6 @@ CMD_FUNC(CMD_UNMUTE)
 	sendnotice(client, "You have unmuted %s", target->name);
 	unreal_log(ULOG_INFO, "unmute", "MUTE_COMMAND", client,
 					"$client unmuted $target.",
-					log_data_string("change_type", "mute"),
 					log_data_client("target", target));
 }
 
@@ -520,4 +549,87 @@ int muted_mtag_should_send_to_client(Client *target)
 	return 0;
 
 	
+}
+RPC_CALL_FUNC(rpc_mute_list)
+{
+
+	json_t *result, *list, *item;
+	Client *muted;
+	int details;
+	result = json_object();
+	list = json_array();
+
+	OPTIONAL_PARAM_INTEGER("object_detail_level", details, 4);
+	json_object_set_new(result, "list", list);
+
+	list_for_each_entry(muted, &client_list, client_node)
+	{
+		if (IsMuted(muted))
+		{
+			item = json_object();
+			json_expand_client(item, NULL, muted, details);
+			json_array_append_new(list, item);
+		}
+	}
+
+	rpc_response(client, request, result);
+	json_decref(result);
+}
+RPC_CALL_FUNC(rpc_mute)
+{
+	json_t *result;
+	Client *acptr;
+	const char *nick;
+
+	REQUIRE_PARAM_STRING("nick", nick);
+
+	if (!(acptr = find_user(nick, NULL)))
+	{
+		rpc_error(client, request, JSON_RPC_ERROR_NOT_FOUND, "Nickname not found");
+		return;
+	}
+	if (IsMuted(acptr))
+	{
+		rpc_error(client, request, JSON_RPC_ERROR_ALREADY_EXISTS, "That user is already muted.");
+		return;
+	}
+
+	Mute(acptr);
+
+	unreal_log(ULOG_INFO, "mute", "MUTE_COMMAND", client,
+					"$client muted $target.",
+					log_data_client("target", acptr));
+
+	result = json_boolean(1);
+	rpc_response(client, request, result);
+	json_decref(result);
+}
+RPC_CALL_FUNC(rpc_unmute)
+{
+	json_t *result;
+	Client *acptr;
+	const char *nick;
+
+	REQUIRE_PARAM_STRING("nick", nick);
+
+	if (!(acptr = find_user(nick, NULL)))
+	{
+		rpc_error(client, request, JSON_RPC_ERROR_NOT_FOUND, "Nickname not found");
+		return;
+	}
+	if (!IsMuted(acptr))
+	{
+		rpc_error(client, request, JSON_RPC_ERROR_NOT_FOUND, "That user wasn't muted.");
+		return;
+	}
+
+	Unmute(acptr);
+
+	unreal_log(ULOG_INFO, "mute", "UNMUTE_COMMAND", client,
+					"$client unmuted $target.",
+					log_data_client("target", acptr));
+
+	result = json_boolean(1);
+	rpc_response(client, request, result);
+	json_decref(result);
 }
