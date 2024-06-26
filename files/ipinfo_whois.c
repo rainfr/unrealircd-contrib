@@ -11,8 +11,8 @@ module
     min-unrealircd-version "6.*";
     post-install-text {
         "The module is installed, now all you need to do is add a 'loadmodule' line to your config file:";
-        "loadmodule \"third/m_ipinfo_whois\";";
-        "Add the TOKEN API to the block ipinfo_whois in you're config file";
+        "loadmodule \"third/ipinfo_whois\";";
+        "Add the TOKEN API from ipinfo.io to the block ipinfo_whois in you're config file";
         "Then /rehash the IRCd.";
         "For usage information, refer to the module's documentation found at: https://github.com/revrsedev/UnrealIRCD-6-mods-contrib/blob/main/ipinfo_whois/README.md";
     }
