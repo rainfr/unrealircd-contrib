@@ -32,7 +32,7 @@ void list_security_groups_for_user(Client *client, Client *user);
 void list_members_of_security_group(Client *client, const char *groupname);
 
 ModuleHeader MOD_HEADER = {
-    "third/m_listsg",   // Module name
+    "third/listsg",   // Module name
     "1.0",              // Version
     "Command /SG to list security groups and their members", // Description
     "reverse",          // Author
