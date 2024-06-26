@@ -134,6 +134,26 @@ module "third/block_notlsident"
 	}
 }
 
+module "third/queue"
+{
+	description "Adds command /QUEUE";
+	version "1.0";
+	author "Valware";
+	documentation "https://github.com/ValwareIRC/valware-unrealircd-mods/blob/main/queue/README.md";
+	troubleshooting "In case of problems, check the documentation or find me on IRC";
+	source "https://raw.githubusercontent.com/unrealircd/unrealircd-contrib/unreal6/files/queue.c";
+	sha256sum "25bfa1d64ce66f3759c5c804803e3af99d759535f41fc9f572d0436e2b7ed08f";
+	min-unrealircd-version "6.*";
+	max-unrealircd-version "6.*";
+	post-install-text
+	{
+		"The module is installed. Now all you need to do is add a loadmodule line:";
+		"loadmodule \"third/queue\";";
+		"to your configuration, and then rehash your server.";
+		"The module does not need any other configuration.";
+	}
+}
+
 module "third/topicgreeting"
 {
 	description "Greet users who join a channel by changing the topic (channel mode +g)";
