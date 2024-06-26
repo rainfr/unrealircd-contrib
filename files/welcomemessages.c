@@ -44,7 +44,7 @@ int custom_join(Client *sptr, Channel *chptr, MessageTag *mtags);
 
 // Dat dere module header
 ModuleHeader MOD_HEADER = {
-	"third/channelwelcome", // Module name
+	"third/welcomemessages", // Module name
 	"1.0.1", // Version
 	"Sends server custom welcome messages for differents channels", // Description
 	"reverse", // Author
