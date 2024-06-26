@@ -67,6 +67,7 @@ MOD_TEST() {
 
 MOD_INIT() {
     MARK_AS_GLOBAL_MODULE(modinfo);
+    ModuleSetOptions(modinfo->handle, MOD_OPT_PERM, 1);
     HookAdd(modinfo->handle, HOOKTYPE_CONFIGRUN, 0, ipinfo_whois_configrun);
     HookAdd(modinfo->handle, HOOKTYPE_WHOIS, 0, ipinfo_whois_whois);
     return MOD_SUCCESS;
