@@ -45,7 +45,7 @@ CacheEntry *cache = NULL;
 time_t cache_duration = 86400; // 24 hours
 
 ModuleHeader MOD_HEADER = {
-    "third/m_ipinfo_whois",
+    "third/ipinfo_whois",
     "1.0.0",
     "Show IPinfo.io information in WHOIS",
     "reverse",
